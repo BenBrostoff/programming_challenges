@@ -1,7 +1,6 @@
 require 'benchmark'
 
 class FactCache
-
   attr_reader :cache
 
   def initialize 
@@ -30,6 +29,7 @@ class FactCache
     mult_hold = []
     array.each { |x| mult_hold << x if x % num == 0 &&
                      x > num }
+    mult_hold
   end
 
   def gen_hash(array, method)
@@ -44,13 +44,5 @@ class FactCache
   end
 
 end
-
-test = FactCache.new
-p "A ***"
-puts Benchmark.measure { test.gen_hash([10, 5, 2, 20], "factors") }
-p "B ***"
-puts Benchmark.measure { test.gen_hash([10, 5, 2, 20], "factors") }
-
-
 
 
