@@ -2,10 +2,10 @@ require 'chronic'
 
 class Line_of_Credit
 
-  attr_accessor :apr, :credit_limit, 
-                :transactions, :period_outstanding, :origin,
-                :current_outstanding,
-                :current_credit_limit, :cutoff
+  attr_accessor :apr, :credit_limit, :transactions,
+                :period_outstanding, :current_outstanding, 
+                :period_credit_limit, :current_credit_limit,
+                :origin, :cutoff
 
   def initialize(apr, credit_limit)
     if !apr.is_a?(Integer || Float) ||
@@ -24,10 +24,11 @@ class Line_of_Credit
     @valid_types = ["Draw", "Payment"]
   end
 
-  def transact(type, amount, time = Time.now) #for testing purposes
-    raise ArgumentError, "Invalid transaction - must be valid type" if !@valid_types.include?(type)
-    raise ArgumentError, "Invalid transaction - must enter a non-negative amount" if amount < 0
-    raise ArgumentError, "Invalid transaction - credit limit exceeded" if amount > @current_credit_limit
+  def transact(type, amount, time = Time.now) 
+    raise ArgumentError, "Invalid transaction - must be valid type." if !@valid_types.include?(type)
+    raise ArgumentError, "Invalid transaction - must enter a non-negative amount." if amount < 0
+    raise ArgumentError, "Invalid transaction - credit limit exceeded." if amount > @current_credit_limit && type == "Draw"
+    raise ArgumentError, "Invalid transaction - payment must not exceed balance." if amount > @current_outstanding && type == "Payment"
     
     amount = amount * -1 if type == "Payment"
 
@@ -60,6 +61,13 @@ class Line_of_Credit
 
   def total_payment
     @current_outstanding + calc_interest
+  end
+
+  def month_reset
+    @period_credit_limit = @current_credit_limit
+    @period_outstanding = @current_outstanding
+    @origin = @cutoff
+    @cutoff = Chronic.parse("30 days from now")
   end
 
 end
