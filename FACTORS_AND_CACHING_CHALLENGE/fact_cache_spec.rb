@@ -36,7 +36,7 @@ describe 'FactCache' do
 
     it "should display improved performance when results are cached" do
       expect(perf_a > perf_b).to eq(true)
-      expect(perf_c > perf_d).to eq(true)  
+      expect(perf_c >= perf_d).to eq(true)  
     end
 
   end 
