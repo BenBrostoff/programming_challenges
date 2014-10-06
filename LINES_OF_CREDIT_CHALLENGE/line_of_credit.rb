@@ -19,7 +19,7 @@ class Line_of_Credit
     @period_credit_limit = @current_credit_limit = card_properties.fetch(:credit_limit, 1_000)
     @period_outstanding = @current_outstanding = 0
     @transactions = {}
-    @origin, @cutoff = Time.now, Chronic.parse("30 days from now")
+    @origin, @cutoff = card_properties[:origin], card_properties[:origin] + thirty_days 
     @valid_types = ["Draw", "Payment"]
   end
 
@@ -40,7 +40,7 @@ class Line_of_Credit
   end
 
   def period_convert(end_date, start_date, os, apr)
-    days = ((end_date - start_date) / (24 * 60 * 60)).round
+    days = ((end_date - start_date) / (24 * 60 ** 2)).round
     (days.to_f / 365.0 * os * apr).round(2)
   end
 
@@ -62,11 +62,15 @@ class Line_of_Credit
     @current_outstanding + calc_interest
   end
 
+  def thirty_days
+    30 * 24 * 60 ** 2
+  end
+
   def month_reset
     @period_credit_limit = @current_credit_limit
     @period_outstanding = @current_outstanding
     @origin = @cutoff
-    @cutoff = Chronic.parse("30 days from now")
+    @cutoff = @origin + thirty_days
   end
 
 end

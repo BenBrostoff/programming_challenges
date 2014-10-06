@@ -1,9 +1,10 @@
 require_relative 'line_of_credit'
 
 describe 'Line_of_Credit' do 
+  let(:start) { Time.now }
 
-  let(:loc_1) { Line_of_Credit.new({:apr => 35, :credit_limit => 1000}) }
-  let(:loc_2) { Line_of_Credit.new({:apr => 35, :credit_limit => 1000}) }
+  let(:loc_1) { Line_of_Credit.new({:apr => 35, :credit_limit => 1000, :origin => start}) }
+  let(:loc_2) { Line_of_Credit.new({:apr => 35, :credit_limit => 1000, :origin => start}) }
 
   let(:invalid_limit) { "Invalid card - credit limit must be above 0." }
   let(:invalid_apr) { "Invalid card - APR must be above 0." } 
@@ -61,6 +62,20 @@ describe 'Line_of_Credit' do
       expect(loc_2.total_payment).to eq(411.99)
     end  
 
+    it "should reset card attributes at the end of the 30 day period" do
+      loc_1.month_reset
+      loc_2.month_reset
+
+      expect(loc_1.period_outstanding).to eq(500)
+      expect(loc_1.period_credit_limit).to eq(500)
+      expect(loc_1.origin.round(1)).to eq((start + loc_1.thirty_days).round(1))
+      expect(loc_1.cutoff.round(1)).to eq((start + loc_1.thirty_days * 2).round(1))
+
+      expect(loc_2.period_outstanding).to eq(400)
+      expect(loc_2.period_credit_limit).to eq(600)
+      expect(loc_2.origin.round(1)).to eq((start + loc_2.thirty_days).round(1))
+      expect(loc_2.cutoff.round(1)).to eq((start + loc_2.thirty_days * 2).round(1))
+    end
   end
 
 
