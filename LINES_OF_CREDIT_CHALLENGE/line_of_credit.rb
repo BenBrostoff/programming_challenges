@@ -7,20 +7,19 @@ class Line_of_Credit
                 :period_credit_limit, :current_credit_limit,
                 :origin, :cutoff
 
-  def initialize(apr, credit_limit)
-    if !apr.is_a?(Integer || Float) ||
-       !credit_limit.is_a?(Integer || Float)
+  def initialize(card_properties)
+    if !card_properties[:apr].is_a?(Integer || Float) ||
+       !card_properties[:credit_limit].is_a?(Integer || Float)
       raise ArgumentError, "Invalid card - APR and credit limit must be in valid form." 
     end
-    raise ArgumentError, "Invalid card - APR must be above 0." if apr < 0
-    raise ArgumentError, "Invalid card - credit limit must be above 0." if credit_limit < 0
+    raise ArgumentError, "Invalid card - APR must be above 0." if card_properties[:apr] < 0
+    raise ArgumentError, "Invalid card - credit limit must be above 0." if card_properties[:credit_limit] < 0
 
-    @apr = apr.to_f / 100.0 
-    @period_credit_limit, @current_credit_limit = credit_limit, credit_limit
+    @apr = card_properties.fetch(:apr, 15).to_f / 100.0 
+    @period_credit_limit = @current_credit_limit = card_properties.fetch(:credit_limit, 1_000)
+    @period_outstanding = @current_outstanding = 0
     @transactions = {}
-    @period_outstanding, @current_outstanding = 0, 0 
-    @origin = Time.now
-    @cutoff = Chronic.parse("30 days from now")
+    @origin, @cutoff = Time.now, Chronic.parse("30 days from now")
     @valid_types = ["Draw", "Payment"]
   end
 
@@ -36,8 +35,8 @@ class Line_of_Credit
     @current_credit_limit -= amount
 
     @transactions[time] = { :type => type, :amount => amount,
-                                :outstanding => @current_outstanding,
-                                :credit_limit => @current_credit_limit }
+                            :outstanding => @current_outstanding,
+                            :credit_limit => @current_credit_limit }
   end
 
   def period_convert(end_date, start_date, os, apr)
@@ -46,7 +45,7 @@ class Line_of_Credit
   end
 
   def calc_interest
-    interest, outstanding, last_date = 0, @period_outstanding, origin
+    interest, outstanding, last_date = 0, @period_outstanding, @origin
     @transactions.each do |key, value|
       if key < @cutoff
         interest += period_convert(key, last_date, outstanding, @apr)
@@ -71,4 +70,3 @@ class Line_of_Credit
   end
 
 end
-

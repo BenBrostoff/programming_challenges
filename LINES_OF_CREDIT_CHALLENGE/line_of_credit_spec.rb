@@ -2,8 +2,8 @@ require_relative 'line_of_credit'
 
 describe 'Line_of_Credit' do 
 
-  let(:loc_1) {Line_of_Credit.new(35, 1000)}
-  let(:loc_2) {Line_of_Credit.new(35, 1000)}
+  let(:loc_1) { Line_of_Credit.new({:apr => 35, :credit_limit => 1000}) }
+  let(:loc_2) { Line_of_Credit.new({:apr => 35, :credit_limit => 1000}) }
 
   let(:invalid_limit) { "Invalid card - credit limit must be above 0." }
   let(:invalid_apr) { "Invalid card - APR must be above 0." } 
@@ -22,8 +22,12 @@ describe 'Line_of_Credit' do
   context "error validation" do 
 
     it "should raise an error in attempt of creation of an invalid LOC" do
-      expect{ Line_of_Credit.new(10, -1) }.to raise_error(ArgumentError, invalid_limit)
-      expect{ Line_of_Credit.new(-1, 10) }.to raise_error(ArgumentError, invalid_apr)
+      expect{ 
+          Line_of_Credit.new({:apr => 10, :credit_limit => -1}) 
+        }.to raise_error(ArgumentError, invalid_limit)
+      expect{ 
+          Line_of_Credit.new({:apr => -1, :credit_limit => 10}) 
+        }.to raise_error(ArgumentError, invalid_apr)
     end  
 
     it "should raise an error for invalid transactions" do 
