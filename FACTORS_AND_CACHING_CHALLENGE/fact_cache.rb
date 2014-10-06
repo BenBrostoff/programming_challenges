@@ -8,15 +8,14 @@ class FactCache
   end
 
   def check_cache(array)
-    return @cache[array] if @cache[array]
-    return false 
+     @cache[array] ? @cache[array] : false
   end
 
   def factors(num, array)
     factor_hold = []
     n = 1
     while n <= num ** 0.5
-      if num.modulo(n) == 0
+      if num % n == 0
         factor_hold << n
         factor_hold << num / n unless num / n == n
       end
